@@ -1,0 +1,15 @@
+{% import "_includes/forms" as forms %}
+{% if craft.app.getIsMultiSite() %}
+<div id="variant-multi-site" class="hidden">
+    {% for variant in variants %}
+        {% namespace "variants[#{variant.id}]" %}
+            {{ forms.lightswitchField({
+                label: "Enabled for site"|t('commerce'),
+                id: 'enabledForSite',
+                name: 'enabledForSite',
+                on: variant.enabledForSite
+            })|attr({'data-variant-id':variant.id}) }}
+        {% endnamespace %}
+    {% endfor %}
+</div>
+{% endif %}

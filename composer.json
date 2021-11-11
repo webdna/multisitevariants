@@ -1,0 +1,49 @@
+{
+    "name": "webdna/multisite-variants",
+    "description": "Enable or disable variants based on site",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "multisite variants"
+    ],
+    "support": {
+        "docs": "https://github.com/webdna/multisite-variants/blob/master/README.md",
+        "issues": "https://github.com/webdna/multisite-variants/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Web DNA",
+            "homepage": "https://webdna.co.uk"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0"
+    },
+    "require-dev": {
+      "craftcms/cms": "^3.2.0",
+      "codeception/codeception": "^3.0",
+      "vlucas/phpdotenv": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "webdna\\multisitevariants\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Multisite Variants",
+        "handle": "multisite-variants",
+        "developer": "Web DNA",
+        "developerUrl": "https://webdna.co.uk",
+        "documentationUrl": "https://github.com/webdna/multisite-variants/blob/master/README.md",
+        "changelogUrl": "https://raw.githubusercontent.com/webdna/multisite-variants/master/CHANGELOG.md",
+        "components": {
+            "multisiteVariantsService": "webdna\\multisitevariants\\services\\MultisiteVariantsService"
+        },
+        "class": "webdna\\multisitevariants\\MultisiteVariants"
+    }
+}
