@@ -40,7 +40,7 @@ class MultisiteVariantsAsset extends AssetBundle
         ];
 
         $this->css = [
-            'css/multisite-variantst.css',
+            'css/multisite-variants.css',
         ];
 
         parent::init();

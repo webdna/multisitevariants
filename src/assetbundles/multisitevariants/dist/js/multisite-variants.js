@@ -10,11 +10,26 @@
  * @since     1.0.0
  */
 
-let destinations = document.querySelectorAll(`.variant-matrixblock[data-id]`);
+let variantBlocks = document.querySelectorAll(`.variant-matrixblock[data-id]`);
 
-destinations.forEach( d => {
-    let variantId = d.dataset.id,
-        $metafields = d.querySelector(`.fields .variant-properties.meta`),
-        $switch = document.querySelector(`#variants-${ variantId }-enabledForSite-field`);
-        $metafields.appendChild($switch);
+variantBlocks.forEach( b => {
+    let variantId = b.dataset.id,
+        $metaFields = b.querySelector(`.fields .variant-properties.meta`),
+        $stockInput = $metaFields.querySelector(`input#variants-${ variantId }-stock`),
+        $unlimitedCheck = $metaFields.querySelector(`input#variants-${ variantId }-unlimited-stock`),
+        $switch = document.querySelector(`#variants-${ variantId }-enabledForSite-field`),
+        stock = document.querySelector(`input[name="variants[${ variantId }][siteStock]"]`).value,
+        unlimited = !!document.querySelector(`input[name="variants[${ variantId }][siteHasUnlimitedStock]"]`).value;
+        console.log(unlimited);
+        // Add switch
+        $metaFields.appendChild($switch);
+        // Modify stock
+        $stockInput.value = stock;
+        $stockInput.disabled = unlimited;
+        $unlimitedCheck.checked = unlimited;
+        if (unlimited) {
+            $stockInput.classList.add('disabled');
+        } else {
+            $stockInput.classList.remove('disabled');
+        }        
 });

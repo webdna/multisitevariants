@@ -11,17 +11,20 @@
 namespace webdna\multisitevariants;
 
 use webdna\multisitevariants\services\MultisiteVariantsService as MultisiteVariantsServiceService;
+use webdna\multisitevariants\behaviors\MultisiteVariantBehavior;
 
 use Craft;
 use craft\base\Plugin;
 use craft\base\Element;
-use craft\services\Plugins;
+use craft\elements\db\ElementQuery;
+use craft\events\DefineBehaviorsEvent;
 use craft\events\ModelEvent;
 use craft\events\PluginEvent;
 use craft\helpers\ElementHelper;
+use craft\services\Plugins;
 
 use craft\commerce\elements\Variant;
-use craft\commerce\elements\Product;
+use craft\commerce\elements\Order;
 
 use yii\base\Event;
 
@@ -86,20 +89,58 @@ class MultisiteVariants extends Plugin
             'service' => MultisiteVariantsServiceService::class
         ]);
 
-        Event::on(Product::class, Element::EVENT_AFTER_SAVE, function(ModelEvent $e) {
-            // @var Entry $entry
-            $product = $e->sender;
-            if (ElementHelper::isDraftOrRevision($product)) {
-                return;
+        Event::on(
+            Variant::class,
+            Variant::EVENT_DEFINE_BEHAVIORS,
+            function(DefineBehaviorsEvent $event) {
+                $event->sender->attachBehaviors([
+                    MultisiteVariantBehavior::class,
+                ]);
             }
+        );
+
+        // create the stock records before the variant is saved to pass the correct total stock
+        Event::on(Variant::class, Element::EVENT_BEFORE_SAVE, function(ModelEvent $e) {
             $request = Craft::$app->getRequest();
-            $siteId = (int)$request->getBodyParam('siteId');
-            $variantsParam = $request->getBodyParam('variants');
-            $variants =[];  
-            foreach ($variantsParam as $id => $value) {
-                $variants[$id] = (bool)$value['enabledForSite'];
+            // This is only for CP saves, need to exclude queue jobs
+            if ($request->getIsCpRequest() && $request->getBodyParam('variants')) {
+                Craft::getLogger()->log('the before variant save event got called and its a cp request', Craft::getLogger()::LEVEL_ERROR, 'application');
+                $variant = $e->sender;
+                $variantData = $request->getBodyParam('variants')[$variant->id];
+
+                $siteId = (int)$request->getBodyParam('siteId');
+                $stock = (int)(array_key_exists('stock',$variantData) ? $variantData['stock'] : 0); //should this be zero just because its missing from the POST?
+                $unlimited = (bool)(array_key_exists('hasUnlimitedStock',$variantData) ? $variantData['hasUnlimitedStock'] : false);
+
+                $this->service->saveVariantSiteStock($variant->id, $stock, $unlimited, $siteId);
+                $variant->stock = $variant->getTotalStock();
+                $e->sender = $variant;
             }
-            $this->service->saveVariantsForSites($variants,$siteId);
+        });
+
+        // update the site settings after variant save to make sure there is an existing site settings record.
+        Event::on(Variant::class, Element::EVENT_AFTER_SAVE, function(ModelEvent $e) {
+            $request = Craft::$app->getRequest();
+            if ($request->getIsCpRequest() && $request->getBodyParam('variants')) {
+                Craft::getLogger()->log('the after variant save event got called and its a cp request', Craft::getLogger()::LEVEL_ERROR, 'application');
+                $variant = $e->sender;
+                $siteId = (int)$request->getBodyParam('siteId');
+                $variantData = $request->getBodyParam('variants')[$variant->id];
+                $this->service->saveVariantSiteSettings($variant->id, [$siteId => (bool)$variantData['enabledForSite']]);
+            }
+        });
+
+        // Update the site stock to match the reduced total stock on order complete
+        Event::on(Order::class, Order::EVENT_AFTER_COMPLETE_ORDER, function(Event $e) {
+            $order = $e->sender;
+            foreach ($order->lineItems as $lineItem) {
+                $this->service->afterOrderComplete($lineItem->getPurchasable(), $lineItem->qty);
+            }
+        });
+
+        // Make sure the rows are deleted on variant deletion, cascade should take care of this 
+        Event::on(Variant::class, Element::EVENT_AFTER_DELETE, function(ModelEvent $e) {
+            $this->service->deleteVariantSiteStock($e->sender->id);
         });
 
         if (Craft::$app->getRequest()->getIsCpRequest()) {

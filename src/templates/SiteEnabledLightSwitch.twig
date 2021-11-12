@@ -3,6 +3,10 @@
 <div id="variant-multi-site" class="hidden">
     {% for variant in variants %}
         {% namespace "variants[#{variant.id}]" %}
+            {{ hiddenInput('siteStock', variant.getSiteStock(site)) }}
+            {{ hiddenInput('siteHasUnlimitedStock', variant.getSiteHasUnlimitedStock(site)) }}
+            {# {{ hiddenInput('siteStock', loop.index) }}
+            {{ hiddenInput('siteHasUnlimitedStock', false) }} #}
             {{ forms.lightswitchField({
                 label: "Enabled for site"|t('commerce'),
                 id: 'enabledForSite',
