@@ -104,17 +104,20 @@ class MultisiteVariants extends Plugin
             $request = Craft::$app->getRequest();
             // This is only for CP saves, need to exclude queue jobs
             if ($request->getIsCpRequest() && $request->getBodyParam('variants')) {
-                Craft::getLogger()->log('the before variant save event got called and its a cp request', Craft::getLogger()::LEVEL_ERROR, 'application');
                 $variant = $e->sender;
-                $variantData = $request->getBodyParam('variants')[$variant->id];
+                $postData = $request->getBodyParam('variants');
+                if (array_key_exists($variant->id, $postData)) {
+                    // Need to think about how to save stock for new variant, other than wait for first load
+                    $variantData = $request->getBodyParam('variants')[$variant->id];
+                    $siteId = (int)$request->getBodyParam('siteId');
+                    $stock = (int)(array_key_exists('stock',$variantData) ? $variantData['stock'] : 0); //should this be zero just because its missing from the POST?
+                    $unlimited = (bool)(array_key_exists('hasUnlimitedStock',$variantData) ? $variantData['hasUnlimitedStock'] : false);
 
-                $siteId = (int)$request->getBodyParam('siteId');
-                $stock = (int)(array_key_exists('stock',$variantData) ? $variantData['stock'] : 0); //should this be zero just because its missing from the POST?
-                $unlimited = (bool)(array_key_exists('hasUnlimitedStock',$variantData) ? $variantData['hasUnlimitedStock'] : false);
-
-                $this->service->saveVariantSiteStock($variant->id, $stock, $unlimited, $siteId);
-                $variant->stock = $variant->getTotalStock();
-                $e->sender = $variant;
+                    $this->service->saveVariantSiteStock($variant->id, $stock, $unlimited, $siteId);
+                    $variant->stock = $variant->getTotalStock();
+                    $e->sender = $variant;
+                }
+                
             }
         });
 
@@ -122,11 +125,13 @@ class MultisiteVariants extends Plugin
         Event::on(Variant::class, Element::EVENT_AFTER_SAVE, function(ModelEvent $e) {
             $request = Craft::$app->getRequest();
             if ($request->getIsCpRequest() && $request->getBodyParam('variants')) {
-                Craft::getLogger()->log('the after variant save event got called and its a cp request', Craft::getLogger()::LEVEL_ERROR, 'application');
                 $variant = $e->sender;
-                $siteId = (int)$request->getBodyParam('siteId');
-                $variantData = $request->getBodyParam('variants')[$variant->id];
-                $this->service->saveVariantSiteSettings($variant->id, [$siteId => (bool)$variantData['enabledForSite']]);
+                $postData = $request->getBodyParam('variants');
+                if (array_key_exists($variant->id, $postData)) {
+                    $siteId = (int)$request->getBodyParam('siteId');
+                    $variantData = $request->getBodyParam('variants')[$variant->id];
+                    $this->service->saveVariantSiteSettings($variant->id, [$siteId => (bool)$variantData['enabledForSite']]);
+                }
             }
         });
 
