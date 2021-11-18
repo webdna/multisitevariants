@@ -195,7 +195,7 @@ class MultisiteVariantsService extends Component
         $site = $context['site'];
 
         Craft::$app->getView()->registerAssetBundle(MultisiteVariantsAsset::class);
-        return Craft::$app->getView()->renderTemplate('multisite-variants/SiteEnabledLightSwitch',[
+        return Craft::$app->getView()->renderTemplate('multisite-variants/MultiSiteFields',[
             'variants' => $product->variants,
             'site' => $site->id
         ]);

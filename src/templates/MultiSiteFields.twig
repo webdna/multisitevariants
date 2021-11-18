@@ -1,0 +1,53 @@
+{% import "_includes/forms" as forms %}
+{% if craft.app.getIsMultiSite() %}
+<div id="variant-multi-site" class="">
+    {% for variant in variants %}
+        {% set stock = variant.getSiteStock(site) %}
+        {% set unlimited = variant.getSiteHasUnlimitedStock(site) %}
+        {% namespace "variants[#{variant.id}]" %}
+            <div id="multi-site">
+            {# {{ hiddenInput('siteStock', stock) }}
+            {{ hiddenInput('siteHasUnlimitedStock', unlimited) }} #}
+            {# {{ hiddenInput('siteStock', loop.index) }}
+            {{ hiddenInput('siteHasUnlimitedStock', false) }} #}
+            {{ forms.lightswitchField({
+                label: "Enabled for site"|t('commerce'),
+                id: 'enabledForSite',
+                name: 'enabledForSite',
+                on: variant.enabledForSite
+            })|attr({'data-variant-id':variant.id}) }}
+            {# stock #}
+            {% set stockInput %}
+                <div class="flex">
+                    <div class="textwrapper">
+                        {{ forms.text({
+                            id: 'stock',
+                            name: 'siteStock',
+                            value: (variant.getSiteHasUnlimitedStock() ? '' : (stock == '0' ? '0': (stock ? stock : ''))),
+                            placeholder: 'Enter stock'|t('commerce'),
+                            disabled: unlimited ? true : false,
+                        }) }}
+                    </div>
+                    <div class="nowrap">
+                        {{ forms.checkbox({
+                            id: 'unlimited-stock',
+                            class: 'unlimited-stock',
+                            label: 'Unlimited'|t('commerce'),
+                            name: 'siteHasUnlimitedStock',
+                            checked: unlimited ? true : false,
+                        }) }}
+                    </div>
+                </div>
+            {% endset %}
+
+            {{ forms.field({
+                id: 'stock',
+                label: 'Site Stock'|t('commerce'),
+                required: true,
+                errors: variant.getErrors('hasUnlimitedStock')|merge(variant.getErrors('stock')),
+            }, stockInput) }}
+            </div>
+        {% endnamespace %}
+    {% endfor %}
+</div>
+{% endif %}

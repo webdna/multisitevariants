@@ -10,26 +10,17 @@
  * @since     1.0.0
  */
 
-let variantBlocks = document.querySelectorAll(`.variant-matrixblock[data-id]`);
+ let variantBlocks = document.querySelectorAll(`.variant-matrixblock[data-id]`);
 
-variantBlocks.forEach( b => {
-    let variantId = b.dataset.id,
-        $metaFields = b.querySelector(`.fields .variant-properties.meta`),
-        $stockInput = $metaFields.querySelector(`input#variants-${ variantId }-stock`),
-        $unlimitedCheck = $metaFields.querySelector(`input#variants-${ variantId }-unlimited-stock`),
-        $switch = document.querySelector(`#variants-${ variantId }-enabledForSite-field`),
-        stock = document.querySelector(`input[name="variants[${ variantId }][siteStock]"]`).value,
-        unlimited = !!document.querySelector(`input[name="variants[${ variantId }][siteHasUnlimitedStock]"]`).value;
-        console.log(unlimited);
-        // Add switch
-        $metaFields.appendChild($switch);
-        // Modify stock
-        $stockInput.value = stock;
-        $stockInput.disabled = unlimited;
-        $unlimitedCheck.checked = unlimited;
-        if (unlimited) {
-            $stockInput.classList.add('disabled');
-        } else {
-            $stockInput.classList.remove('disabled');
-        }        
-});
+ variantBlocks.forEach( b => {
+     let variantId = b.dataset.id,
+         $metaFields = b.querySelector(`.fields .variant-properties.meta`),
+         $multiFields = document.querySelector(`#variants-${ variantId }-multi-site`).children;
+     Array.from($multiFields).forEach(el => {
+         $metaFields.appendChild(el);
+     });
+ 
+ });
+ document.querySelector('#variant-multi-site').remove();
+ 
+ 
