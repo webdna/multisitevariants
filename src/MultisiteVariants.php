@@ -114,7 +114,7 @@ class MultisiteVariants extends Plugin
                     $unlimited = (bool)(array_key_exists('hasUnlimitedStock',$variantData) ? $variantData['hasUnlimitedStock'] : false);
 
                     $this->service->saveVariantSiteStock($variant->id, $stock, $unlimited, $siteId);
-                    $variant->stock = $variant->getTotalStock();
+                    // $variant->stock = $variant->getTotalStock(); -- separate total stock from site stock for the time being
                     $e->sender = $variant;
                 }
                 
