@@ -21,16 +21,16 @@
                 <div class="flex">
                     <div class="textwrapper">
                         {{ forms.text({
-                            id: 'stock',
+                            id: 'stock-site',
                             name: 'siteStock',
-                            value: (variant.getSiteHasUnlimitedStock() ? '' : (stock == '0' ? '0': (stock ? stock : ''))),
+                            value: stock,
                             placeholder: 'Enter stock'|t('commerce'),
                             disabled: unlimited ? true : false,
                         }) }}
                     </div>
                     <div class="nowrap">
                         {{ forms.checkbox({
-                            id: 'unlimited-stock',
+                            id: 'unlimited-stock-site',
                             class: 'unlimited-stock',
                             label: 'Unlimited'|t('commerce'),
                             name: 'siteHasUnlimitedStock',
@@ -41,7 +41,7 @@
             {% endset %}
 
             {{ forms.field({
-                id: 'stock',
+                id: 'stock-site',
                 label: 'Site Stock'|t('commerce'),
                 required: true,
                 errors: variant.getErrors('hasUnlimitedStock')|merge(variant.getErrors('stock')),
