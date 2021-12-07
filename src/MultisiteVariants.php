@@ -137,14 +137,14 @@ class MultisiteVariants extends Plugin
 
         // Update the site stock to match the reduced total stock on order complete
         Event::on(Order::class, Order::EVENT_AFTER_COMPLETE_ORDER, function(Event $e) {
-            $order = $e->sender;
-            foreach ($order->lineItems as $lineItem) {
-                $this->service->afterOrderComplete($lineItem->getPurchasable(), $lineItem->qty);
-            }
+            // $order = $e->sender;
+            // foreach ($order->lineItems as $lineItem) {
+            //     $this->service->afterOrderComplete($lineItem->getPurchasable(), $lineItem->qty);
+            // }
         });
 
         // Make sure the rows are deleted on variant deletion, cascade should take care of this 
-        Event::on(Variant::class, Element::EVENT_AFTER_DELETE, function(ModelEvent $e) {
+        Event::on(Variant::class, Element::EVENT_AFTER_DELETE, function(Event $e) {
             $this->service->deleteVariantSiteStock($e->sender->id);
         });
 
