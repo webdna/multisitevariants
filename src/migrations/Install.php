@@ -19,19 +19,22 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%commerce_variants_sites}}', [
-            'id' => $this->primaryKey(),
-            'variantId' => $this->integer()->notNull(),
-            'siteId' => $this->integer()->notNull(),
-            'stock' => $this->integer()->defaultValue(0),
-            'hasUnlimitedStock' => $this->boolean(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid()
-        ]);
-        $this->createIndex(null, '{{%commerce_variants_sites}}', ['variantId', 'siteId'], false);
-        $this->addForeignKey(null, '{{%commerce_variants_sites}}', ['variantId'], CommerceTable::VARIANTS, ['id'], 'CASCADE','CASCADE');
-        $this->addForeignKey(null, '{{%commerce_variants_sites}}', ['siteId'], CraftTable::SITES, ['id'], 'CASCADE','CASCADE');
+        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%commerce_variants_sites}}');
+        if ($tableSchema === null) {
+            $this->createTable('{{%commerce_variants_sites}}', [
+                'id' => $this->primaryKey(),
+                'variantId' => $this->integer()->notNull(),
+                'siteId' => $this->integer()->notNull(),
+                'stock' => $this->integer()->defaultValue(0),
+                'hasUnlimitedStock' => $this->boolean(),
+                'dateCreated' => $this->dateTime()->notNull(),
+                'dateUpdated' => $this->dateTime()->notNull(),
+                'uid' => $this->uid()
+            ]);
+            $this->createIndex(null, '{{%commerce_variants_sites}}', ['variantId', 'siteId'], false);
+            $this->addForeignKey(null, '{{%commerce_variants_sites}}', ['variantId'], CommerceTable::VARIANTS, ['id'], 'CASCADE','CASCADE');
+            $this->addForeignKey(null, '{{%commerce_variants_sites}}', ['siteId'], CraftTable::SITES, ['id'], 'CASCADE','CASCADE');
+        }
     }
 
     /**
