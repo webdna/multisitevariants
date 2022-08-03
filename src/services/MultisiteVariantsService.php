@@ -50,6 +50,21 @@ class MultisiteVariantsService extends Component
     }
 
     /**
+     * Returns if there is stock available for the given variant id and site id, uses current site if $siteId is null
+     *
+     * @param int $variantId
+     * @param int $siteId
+     * @return bool
+     */
+    public function hasVariantSiteStock(int $variantId, int $siteId = null): bool
+    {
+        $stock = $this->getVariantSiteStock($variantId, $siteId);
+        $unlimitedStock = $this->getVariantSiteStockUnlimited($variantId, $siteId);
+
+        return $stock > 0 || $unlimitedStock;
+    }
+
+    /**
      * Return total stock for given variant id across all sites
      *
      * @param int $variantId
@@ -90,7 +105,7 @@ class MultisiteVariantsService extends Component
 
     /**
      * Save the stock value for a given variant id and site id, uses current site if $site is null
-     * 
+     *
      * @param int $variantId
      * @param int $stock
      * @param bool $unlimited
@@ -113,7 +128,7 @@ class MultisiteVariantsService extends Component
         $record->hasUnlimitedStock = $unlimited;
         $record->save();
     }
-      
+
     /**
      * Sets whether the variant is enabled for the current site.
      *
@@ -146,7 +161,7 @@ class MultisiteVariantsService extends Component
             }
             $siteSettingsRecord->enabled = $enabled;
             $siteSettingsRecord->save(false);
-        }       
+        }
 
         return true;
     }
@@ -185,9 +200,9 @@ class MultisiteVariantsService extends Component
 
     /**
      * Adds the variant enabled for site switches to the template
-     * 
+     *
      * @param array $context
-     * @return string 
+     * @return string
      */
     public function addVariantEnabledFields(array &$context)
     {

@@ -30,7 +30,7 @@ class MultisiteVariantBehavior extends Behavior
 
     /**
      * Return variant stock for given siteId, or current site if null
-     * 
+     *
      * @param int $siteId
      * @return int
      */
@@ -40,8 +40,19 @@ class MultisiteVariantBehavior extends Behavior
     }
 
     /**
+     * Returns if there is any stock for the given siteId
+     *
+     * @param int $siteId
+     * @return bool
+     */
+    public function hasSiteStock(int $siteId = null): bool
+    {
+        return MultiSiteVariants::$plugin->service->hasVariantSiteStock($this->owner->id, $siteId);
+    }
+
+    /**
      * Return total variant stock for all sites
-     * 
+     *
      * @param int $siteId
      * @return int
      */
@@ -52,7 +63,7 @@ class MultisiteVariantBehavior extends Behavior
 
     /**
      * Return whether stock is unlimited for given siteId or current site if null
-     * 
+     *
      * @param int $siteId
      * @return bool
      */
@@ -63,11 +74,11 @@ class MultisiteVariantBehavior extends Behavior
 
     /**
      * Save variant stock for given siteId, or current site if null and update total
-     * 
+     *
      * @param int $stock
      * @param bool $unlimited
      * @param int $siteId
-     * 
+     *
      * @return void
      */
     public function saveSiteStock(int $stock, bool $unlimited = false, int $siteId = null)
@@ -77,9 +88,9 @@ class MultisiteVariantBehavior extends Behavior
 
     /**
      * Save variant siteSettings in the same way setEnabledForSite() should
-     * 
+     *
      * @param array $sites - ['sideId' => enabledstatus]
-     * 
+     *
      * @return void
      */
     public function saveSiteSettings(array $sites)

@@ -18,6 +18,7 @@ use craft\base\Plugin;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineRulesEvent;
 use craft\events\ModelEvent;
 use craft\events\PluginEvent;
 use craft\helpers\ElementHelper;
@@ -25,6 +26,7 @@ use craft\services\Plugins;
 
 use craft\commerce\elements\Variant;
 use craft\commerce\elements\Order;
+use craft\commerce\models\LineItem;
 
 use yii\base\Event;
 
@@ -89,6 +91,28 @@ class MultisiteVariants extends Plugin
             'service' => MultisiteVariantsServiceService::class
         ]);
 
+
+        Event::on(
+            LineItem::class,
+            LineItem::EVENT_DEFINE_RULES,
+            function(DefineRulesEvent $event) {
+                $lineItem = $event->sender;
+                $variant = $lineItem->purchasable;
+
+                $qtyRuleIndex = null;
+                foreach ($event->rules as $key => $value) {
+                    if ($value[0] == 'qty' ?? null) {
+                        $qtyRuleIndex = $key;
+                    }
+                }
+
+                // Remove stock check rule if item has site stock
+                if($variant->hasSiteStock()) {
+                    unset($event->rules[$qtyRuleIndex]);
+                }
+            }
+        );
+
         Event::on(
             Variant::class,
             Variant::EVENT_DEFINE_BEHAVIORS,
@@ -117,7 +141,7 @@ class MultisiteVariants extends Plugin
                     // $variant->stock = $variant->getTotalStock(); -- separate total stock from site stock for the time being
                     $e->sender = $variant;
                 }
-                
+
             }
         });
 
@@ -143,7 +167,7 @@ class MultisiteVariants extends Plugin
             // }
         });
 
-        // Make sure the rows are deleted on variant deletion, cascade should take care of this 
+        // Make sure the rows are deleted on variant deletion, cascade should take care of this
         Event::on(Variant::class, Element::EVENT_AFTER_DELETE, function(Event $e) {
             $this->service->deleteVariantSiteStock($e->sender->id);
         });
